@@ -8,6 +8,12 @@
 #
 
 library(shiny)
+source("src/functions.R")
+ggplot2::theme_set(theme_grey(15))
+
+papers <- read.csv("papers.csv", stringsAsFactors = FALSE) %>% 
+  select(text=1)
+src_df <- create_tidy_df(papers) 
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -18,16 +24,30 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
+         sliderInput("n_words",
+                     "Number of Words to Plot:",
                      min = 1,
-                     max = 50,
-                     value = 30)
+                     max = 25,
+                     value = 10)
       ),
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+         tabsetPanel(
+           tabPanel("Import"),
+           tabPanel("Frequency", (
+             plotOutput("freqPlot")
+           )),
+           tabPanel("Sentiment", (
+             plotOutput("sentimentPlot")
+           )),
+           tabPanel("Word Cloud", (
+             plotOutput("wordcloudPlot")
+           )),
+           tabPanel("Topic Modeling", (
+             plotOutput("topicPlot")
+           ))
+         )
       )
    )
 )
@@ -35,13 +55,20 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   output$freqPlot <- renderPlot({
+      plot_word_freq(src_df, input$n_words)
+   })
+   
+   output$sentimentPlot <- renderPlot({
+     plot_sentiment(src_df, input$n_words)
+   })
+   
+   output$wordcloudPlot <- renderPlot({
+     plot_word_cloud(src_df)
+   })
+   
+   output$topicPlot <- renderPlot({
+     plot_topic_model(src_df, topics = 4, n_words = input$n_words)
    })
 }
 

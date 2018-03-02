@@ -15,8 +15,6 @@ create_tidy_df <- function(df, text_column = 'text', remove_stop_words=TRUE) {
   res
 }
 
-tidy_df <- create_tidy_df(ab_df)
-
 
 plot_word_freq <- function(df, n_words = 20, tf_idf=FALSE) {
   title <- paste0("Top ", n_words, " words by frequency")
@@ -48,12 +46,9 @@ plot_word_freq <- function(df, n_words = 20, tf_idf=FALSE) {
   
 }
 
-plot_word_freq(tidy_df, 10, T) 
-
-
 plot_sentiment <- function(df, n_words=15) {
 
-  sen_df <- tidy_df %>% 
+  sen_df <- df %>% 
     inner_join(get_sentiments("afinn")) %>% 
     filter(score!=0) %>% 
     mutate(sentiment = ifelse(score>0,"positive","negative")) %>% 
@@ -71,8 +66,6 @@ plot_sentiment <- function(df, n_words=15) {
 
 }
 
-plot_sentiment(tidy_df, 10)
-
 
 plot_word_cloud <- function(df) {
   df %>%
@@ -85,7 +78,7 @@ plot_word_cloud <- function(df) {
 
 
 plot_topic_model <- function(df, topics = 4, n_words=10) {
-  wc_df <- tidy_df %>% 
+  wc_df <- df %>% 
     count(document, word, sort=TRUE) 
   
   dtm_df <- cast_dtm(wc_df, document, word, n)
